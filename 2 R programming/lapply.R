@@ -12,3 +12,9 @@ apply(iris, 1, mean)
 apply(iris[, 1:4], 2, mean)
 
 data(mtcars)
+?mtcars
+str(mtcars)
+tapply(mtcars$mpg,mtcars$cyl,mean)
+s<-split(mtcars,mtcars$cyl)
+lapply(s,function(col) mean(col$mpg))
+a<-tapply(mtcars$hp,mtcars$cyl,mean)
