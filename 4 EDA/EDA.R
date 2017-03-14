@@ -40,6 +40,11 @@ myMtcars<-transform(mtcars,cyl=factor(cyl))
 #Close all graphs
 graphics.off()
 
+#Plot to file
+#pdf(file="myplot.pdf")
+#plot instrctuins
+#dev.off()
+
 ###########################################################################################
 # 1 Dimension
 
@@ -77,12 +82,17 @@ for (cyl in unique(myMtcars$cyl)){
 with(myMtcars, plot(as.numeric(cyl),mpg,col=carb,main="mpg/cyl with carb"))
 legend("topright",legend=levels(factor(myMtcars$carb)),text.col=levels(factor(myMtcars$carb)))
 
-
+par(mfrow=c(1,2),mar=c(4,4,2,1),oma=c(0,0,2,0))
+with(myMtcars,{
+  plot(as.numeric(cyl),mpg,main="mpg/cyl")
+  plot(carb,mpg,main="mpg/carb")
+  mtext("mpg for cyl and carb",outer = TRUE)
+})
 
 nrows=1
-ncols=length(unique(myMtcars$cyl))
+ncols=length(levels(myMtcars$cyl))
 par(mfrow=c(nrows,ncols))
-for (cyli in unique(myMtcars$cyl)){
+for (cyli in levels(myMtcars$cyl)){
   with(subset(myMtcars,cyl==cyli),plot(carb,mpg,main=cyli))
 }
 
