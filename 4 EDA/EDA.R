@@ -9,6 +9,9 @@
 # ########################################################################################
 
 #http://www.r-graph-gallery.com/
+library(lattice)
+library(ggplot2)
+library(datasets)
 
 ###########################################################################################
 # Data
@@ -46,7 +49,7 @@ graphics.off()
 #dev.off()
 
 ###########################################################################################
-# 1 Dimension
+# Base package
 
 #Distribution summary
 summary(myMtcars)
@@ -63,13 +66,11 @@ rug(myMtcars$mpg)
 #Bar plot
 barplot(table(myMtcars$cyl),main="Numer of cars for each cylinder",xlab="cyl",ylab="Observations")
 
-###########################################################################################
-# >1 Dimensions
 
-#Boxplot
+#Boxplot 2D
 boxplot(mpg ~ cyl, data = myMtcars,main="mpg/cyl",xlab="cyl",ylab="mpg")
 
-#Histograms
+#Histograms 2D
 nrows=length(unique(myMtcars$cyl))
 ncols=1
 par(mfrow=c(nrows,ncols))
@@ -78,7 +79,7 @@ for (cyl in unique(myMtcars$cyl)){
   rug(myMtcars$mpg[myMtcars$cyl==cyl])
 }
 
-#Scatterplots
+#Scatterplots 2D
 with(myMtcars, plot(as.numeric(cyl),mpg,col=carb,main="mpg/cyl with carb"))
 legend("topright",legend=levels(factor(myMtcars$carb)),text.col=levels(factor(myMtcars$carb)))
 
@@ -96,3 +97,74 @@ for (cyli in levels(myMtcars$cyl)){
   with(subset(myMtcars,cyl==cyli),plot(carb,mpg,main=cyli))
 }
 
+
+###########################################################################################
+# Lattice
+
+# Scatterplot
+xyplot(Ozone ~ Wind,data=airquality)
+
+#Multiple scatter
+airquality2 <- transform(airquality,Month=factor(Month))
+xyplot(Ozone ~ Wind | Month,data=airquality)
+
+xyplot(Ozone ~ Wind | Month,data=airquality,panel = function(Wind,Ozone,...){
+  panel.xyplot(Wind,Ozone,...)
+  panel.abline(h=median(Ozone),lty=2)
+})
+
+
+###########################################################################################
+# ggplot2
+
+str(mpg)
+
+#Histogram
+qplot(hwy,data=mpg,fill=drv)
+qplot(hwy,data=mpg,geom="density",color=drv)
+#Facets determine the pannels, pannels split data using factors along rows or columns
+qplot(hwy,data=mpg,facets=.~drv)
+qplot(hwy,data=mpg,facets=drv~.)
+
+#Scatterplot
+qplot(displ,hwy,data=mpg,color=drv)
+qplot(displ,hwy,data=mpg,shape=drv)
+qplot(displ,hwy,data=mpg,facets=.~drv)
+qplot(displ,hwy,data=mpg,geom = c("point","smooth"))
+qplot(displ,hwy,data=mpg,color=drv)+geom_smooth(method="lm")
+qplot(displ,hwy,data=mpg,facets=.~drv)+geom_smooth(method="lm")
+
+#ggplot function
+#Define data
+g<-ggplot(mpg, aes(displ,hwy))
+g+geom_point()
+g+geom_point()+theme_bw()
+g+geom_point()+labs(title="hwy")+labs(x="displ",y="hwy")
+g+geom_point(color="steelblue",size=2,alpha=0.5)
+g+geom_point()+geom_smooth()
+g+geom_point()+geom_smooth(method = "lm")
+g+geom_point(aes(color=drv))+geom_smooth(method = "lm")
+g+geom_point(aes(color=drv))+geom_smooth(aes(color=drv),method = "lm")
+g+geom_point()+facet_grid(.~drv)+geom_smooth(method = "lm")
+#Use coord cart otherwise will just subset what fits into the ylim
+g+geom_point()+coord_cartesian(ylim = c(-3,3))
+
+#If one of the independant variables is continous we can't directly use in graph or it would produce an infinity
+#Calculate decides of the data
+cutpoints<- quantile(mpg$cty, seq(0,1,length=4),na.rm = TRUE)
+
+#Cut the data and retrieve factors
+mpg$ctyFactor<-cut(mpg$cty,cutpoints)
+
+#See levels
+levels(mpg$ctyFactor)
+
+library(ggplot2movies)
+g <- ggplot(movies, aes(votes, rating))
+print(g)
+
+
+qplot(Wind, Ozone, data = airquality, facets = . ~ factor(Month))
+
+airquality2 = transform(airquality, Month = factor(Month))
+qplot(Wind, Ozone, data = airquality2, facets = . ~ Month)
