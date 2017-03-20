@@ -30,8 +30,8 @@ strsplit(names(housing),"wgtp")[123]
 
 #2
 gdp<-read.csv("getdata_data_GDP.csv")
-gdpmil<-as.character(gdp$X.3)
-nocomma<-gsub(",","",gdpmil)
-tonum<-as.numeric(nocomma)
-clean<-tonum[complete.cases(tonum)]
-mean(clean)
+cleangdp<-gdp
+cleangdp$X.3<-as.numeric(gsub(",","",as.character(cleangdp$X.3)))
+cleangdp$Gross.domestic.product.2012<-as.numeric(as.character(cleangdp$Gross.domestic.product.2012))
+mean(cleangdp$X.3[complete.cases(cleangdp$X.3,cleangdp$Gross.domestic.product.2012)])
+
