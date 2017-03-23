@@ -142,6 +142,7 @@ points(kmeansObj$centers,col=1:3,pch=3)
 # Is data good enough to answer the initial question?
 # A: Yes
 
+
 ###########################################################################################
 # Statistical Analysis
 ###########################################################################################
