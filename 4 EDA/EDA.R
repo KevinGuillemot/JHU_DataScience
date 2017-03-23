@@ -97,6 +97,9 @@ for (cyli in levels(myMtcars$cyl)){
   with(subset(myMtcars,cyl==cyli),plot(carb,mpg,main=cyli))
 }
 
+#smooth scatter plot, for a lot of data
+smoothScatter(x,y)
+
 
 ###########################################################################################
 # Lattice
@@ -168,3 +171,29 @@ qplot(Wind, Ozone, data = airquality, facets = . ~ factor(Month))
 
 airquality2 = transform(airquality, Month = factor(Month))
 qplot(Wind, Ozone, data = airquality2, facets = . ~ Month)
+
+
+#Hierachical clustering
+dataFrame<- data.frame(x=x,y=y)
+distxy<-dist(dataFrame)
+hClustering <- hclust(distxy)
+plot(hClustering)
+
+#Heatmap
+#Runs hierarchical cluster on rows and columns of a table
+dataFrame<- data.frame(x=x,y=y)
+dataMatrix<-as.matrix(dataFrame)[nrows, ncols]
+heatmap(dataMatrix)
+
+#Kmeans
+dataFrame<- data.frame(x=x,y=y)
+kmeansObj<-kmeans(dataFrame, centers = 3)
+kmeansObj$cluster
+kmeansObj$centers
+plot(x,y,col=kmeansObj$cluster,pch=19)
+points(kmeansObj$centers,col=1:3,pch=3)
+
+#Imputing
+library(impute)
+dataMatrix2<-impute.knn(dataMatrix2)$data
+
