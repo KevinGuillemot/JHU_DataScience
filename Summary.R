@@ -4,10 +4,22 @@
 # 
 # ########################################################################################
 
+# ########################################################################################
+# R settings
+# ########################################################################################
+
 # Clear Environment
 rm(list = ls())
 #Close all graphs
 graphics.off()
+
+# Profiler
+#system.time() for a single expression
+#Rprof() keeps track of function call stack every 0.02 seconds and print it
+#SummaryRprof() organizes. by.self option
+
+# Debugger
+#debug(lm) will enter debug mode next time function is called. n for next instruction
 
 
 # ########################################################################################
@@ -21,6 +33,7 @@ library(impute)
 library(ggplot2)
 library(RColorBrewer)
 library(knitr)
+
 
 ###########################################################################################
 # Question framing
@@ -54,6 +67,9 @@ library(knitr)
 # Dataset Date: 2017-03-15
 # Sampling method: UCI personnal emails
 # Preprocessing: yes, but NA
+
+#Enough memory to load data?
+#1,000,000 rows and 100 columns of numeric data (8 bytes/numeric) =8.10^8 bytes = 800 MB
 
 #Import data
 data("spam")
@@ -93,6 +109,9 @@ rawTest <- rawData[trainIndicator == 0,]
 ###########################################################################################
 # EDA
 ###########################################################################################
+#Show comparisons: a hypothesis is always relative to another
+#Show multivariate data: world is multivariate
+
 #GGplot options
 #Scatter: +geom_point()
 #Scatter w color/factor: geom_point(aes(color=cyl))
@@ -104,6 +123,10 @@ rawTest <- rawData[trainIndicator == 0,]
 #Title/Axis: +labs(title="hwy")+labs(x="displ",y="hwy")
 #Points attributes: geom_point(color="steelblue",size=2,alpha=0.5)
 
+# Color options: 
+# display.brewer.all()
+# pal <- colorRamPalette(brewer.pal(3, "BuGn"))
+# col=pal(10)
 
 #Factors count
 # Desc: validate subsampling
@@ -140,8 +163,11 @@ points(kmeansObj$centers,col=1:3,pch=3)
 
 
 # Is data good enough to answer the initial question?
+# Confounding: did we miss any important extranal variable
 # A: Yes
 
+# Modeling suggested by data
+# Desc:
 
 ###########################################################################################
 # Statistical Analysis
@@ -150,6 +176,7 @@ points(kmeansObj$centers,col=1:3,pch=3)
 # Training
 
 #Source of uncertainty:
+
 
 
 #Choice of model:
@@ -187,6 +214,8 @@ predictedSpam[predictionModel$fitted <= 0.5] = "nonspam"
 table(predictedSpam,rawTest$type)
 
 #Key statistics
+
+
 
 
 ###########################################################################################
