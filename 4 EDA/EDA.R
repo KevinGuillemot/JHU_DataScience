@@ -3,6 +3,10 @@
 # 
 # ########################################################################################
 
+# Clear Environment
+rm(list = ls())
+#Close all graphs
+graphics.off()
 
 # ########################################################################################
 # Libraries
@@ -171,6 +175,38 @@ qplot(Wind, Ozone, data = airquality, facets = . ~ factor(Month))
 
 airquality2 = transform(airquality, Month = factor(Month))
 qplot(Wind, Ozone, data = airquality2, facets = . ~ Month)
+
+
+
+###########################################################################################
+# Clustering
+
+#Find similarities in features
+rawData<-mtcars
+covariates<-select(rawData,-mpg)
+distanceMatrix<-dist(covariates)
+hClustering<-hclust(distanceMatrix)
+plot(hClustering)
+
+#SVD - print 2 first components
+svd1=svd(scale(covariates))
+plot(svd1$u[,1],col=rawData$mpg)
+plot(svd1$u[,2],col=rawData$mpg)
+
+#Cluster with max contributer
+maxContrib<-which.max(svd1$v[,2])
+names(covariates)[maxContrib]
+distanceMatrix<-dist(covariates[,maxContrib])
+hClustering<-hclust(distanceMatrix)
+plot(hClustering)
+
+#Kmean
+
+
+
+
+
+
 
 
 #Hierachical clustering
