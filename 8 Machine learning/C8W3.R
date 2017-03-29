@@ -15,19 +15,50 @@ graphics.off()
 library(AppliedPredictiveModeling)
 library(caret)
 library(pgmm)
+library(ElemStatLearn)
 
 ###########################################################################################
 # Data
 ###########################################################################################
 
+#Q3
 data(olive)
 training = olive[,-1]
-
 testing = as.data.frame(t(colMeans(olive)))
 
-# Training
 modFit<-train(Area~., method="rpart",data=training)
 print(modFit$finalModel)
 
-#Prediction
 predict(modFit,newdata=testing)
+
+#Q4
+data(SAheart)
+set.seed(8484)
+train = sample(1:dim(SAheart)[1],size=dim(SAheart)[1]/2,replace=F)
+trainSA = SAheart[train,]
+testSA = SAheart[-train,]
+
+set.seed(13234)
+modFit<-train(chd~age+alcohol+obesity+typea+tobacco+ldl,
+              method="glm",
+              family="binomial",
+              data=trainSA)
+trainPrecition <- predict(modFit,newdata=trainSA)
+testPrecition <- predict(modFit,newdata=testSA)
+
+missClass = function(values,prediction){
+  sum(((prediction > 0.5)*1) != values)/length(values)
+}
+missClass(trainSA$chd,trainPrecition)
+missClass(testSA$chd,testPrecition)
+
+#Q5
+library(ElemStatLearn)
+data(vowel.train)
+data(vowel.test)
+rawTrain<-vowel.train
+rawTest<-vowel.test
+rawTrain$y<-factor(rawTrain$y)
+rawTest$y<-factor(rawTest$y)
+set.seed(33833)
+
