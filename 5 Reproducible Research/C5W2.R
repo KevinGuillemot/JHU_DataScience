@@ -18,8 +18,8 @@ graphics.off()
 library(data.table)
 library(reshape2)
 library(dplyr)
-library(impute)
 library(ggplot2)
+library(gridExtra)
 library(RColorBrewer)
 library(knitr)
 
@@ -56,7 +56,7 @@ library(knitr)
 # Preprocessing: Unkown
 
 #Import data
-fileLocation<-"repdata_data_activity/activity.csv"
+fileLocation<-"repdata%2Fdata%2Factivity/activity.csv"
 rawActivity <- read.csv(fileLocation)
 
 
@@ -68,13 +68,8 @@ rawActivity <- read.csv(fileLocation)
 #Data structure
 str(rawActivity)
 
-#Data type normalization
-# Desc: num to factorfor interval
-rawActivity$interval<-factor(rawActivity$interval)
-
-#Missing values
+#Missing values are ignored
 noNaActivity<-rawActivity[complete.cases(rawActivity),]
-imputedActivity<-impute.knn(data = rawActivity,k = 5,)
 
 
 ###########################################################################################
@@ -96,15 +91,19 @@ imputedActivity<-impute.knn(data = rawActivity,k = 5,)
 # Mean total number of steps taken per day
 
 # Total number of steps per day
-totalStepsPerDay<-group_by(noNaActivity,date) %>% summarise(totalSteps=sum(steps))
+totalStepsPerDayNoNA<-group_by(noNaActivity,date) %>% summarise(totalSteps=sum(steps))
 
 # Histogram of total number of steps taken each day
-h <- ggplot(totalStepsPerDay,aes(x=totalSteps))
-h + geom_histogram(bins = 50)
+h <- ggplot(totalStepsPerDayNoNA,aes(x=totalSteps))
+  + geom_histogram(bins = 50)
+
+
 
 # Average and median of the total number of steps per day
-avgTotalSteps <- mean(totalStepsPerDay$totalSteps)
-medTotalSteps <- median(totalStepsPerDay$totalSteps)
+avgTotalStepsNoNA <- mean(totalStepsPerDayNoNA$totalSteps)
+medTotalStepsNoNA <- median(totalStepsPerDayNoNA$totalSteps)
+
+
 
 
 # Average daily activity pattern
@@ -122,130 +121,53 @@ maxStepInterval <- avgStepsPerInterval$interval[which.max(avgStepsPerInterval$av
 
 
 
+# Imputing missing values
+
+# Total number of missing values
+nbNAs<-sum(!complete.cases(rawActivity))
+
+# Missing values are replaced by average on the 5 min interval
+imputedActivity <- inner_join(rawActivity,avgStepsPerInterval)
+imputedActivity$steps[!complete.cases(imputedActivity)] = imputedActivity$avgSteps[!complete.cases(imputedActivity)]
+imputedActivity <- select(imputedActivity,steps,date,interval)
+
+# Total number of steps per day
+totalStepsPerDayImp<-group_by(imputedActivity,date) %>% summarise(totalSteps=sum(steps))
+
+# Histogram of total number of steps taken each day
+h <- ggplot(totalStepsPerDayImp,aes(x=totalSteps))
+h + geom_histogram(bins = 50)
+
+# Average and median of the total number of steps per day
+avgTotalStepsImp <- mean(totalStepsPerDayImp$totalSteps)
+medTotalStepsImp <- median(totalStepsPerDayImp$totalSteps)
 
 
 
 
+#differences in activity patterns between weekdays and weekends?
 
-#Relationship between variables
-pairs(rawData)
+# Add weekday variable to dataset
+imputedActivity <- mutate(imputedActivity, weekday = weekdays(as.Date(date)) ) 
 
-#Numeric vs factor - boxplot
-ggplot(rawData, aes(x=cyl, y=mpg)) + geom_boxplot() +labs(title="mpg vs cyl")
-#Difference in mean? also check if variable needs to be scaled (log or so on)
+# Compute average steps on weekdays and on weekend
+weekendActivity <- filter(imputedActivity,weekday %in% c("Saturday","Sunday")) %>%
+                    select(steps,date,interval) %>%
+                    group_by(interval) %>% 
+                    summarise(avgSteps=mean(steps))
+weekdaysActivity <- filter(imputedActivity,weekday %in% c("Monday","Tuesday","Wednesday","Thursday","Friday")) %>%
+                    select(steps,date,interval) %>%
+                    group_by(interval) %>% 
+                    summarise(avgSteps=mean(steps))
 
-#Hierarchical clustering
-hCluster<-hclust(dist(rawData[,1:2]))
-plot(hCluster)
-#Few groups
-
-#Heatmap
-heatmap(as.matrix(rawData))
-
-#Kmeans
-kmeansObj<-kmeans(dataFrame, centers = 3)
-kmeansObj$cluster
-kmeansObj$centers
-plot(x,y,col=kmeansObj$cluster,pch=19)
-points(kmeansObj$centers,col=1:3,pch=3)
-
-
-
-# Is data good enough to answer the initial question?
-# A: Yes
-
-
-###########################################################################################
-# Statistical Analysis
-###########################################################################################
-
-# Training
-
-#Source of uncertainty:
-
-
-#Choice of model:
-# regression
-
-#Normalize variables
-rawTrain$numType <- as.numeric(rawTrain$type)-1
-costFunction <- function(x,y){ sum( x != (y>0.5)) }
-cvError <- rep(NA, 55)
-
-#Try different variables
-for (i in 1:55){
-  lmFormula = reformulate(names(rawTrain)[i],response="numType")
-  glmFit = glm(lmFormula, family="binomial", data=rawTrain)
-  cvError[i] = cv.glm(rawTrain, glmFit, costFunction, 2)$delta[2]
-}
-names(rawTrain)[which.min(cvError)]
-
-#Use best model from the group
-predictionModel = glm(numType~charDollar,family = "binomial", data=rawTrain)
-
-
-
-
-# Test
-predictedSpam=rep(NA,dim(rawTest)[1])
-
-predictionTest=predict(predictionModel,rawTest)
-predictedSpam[predictionModel$fitted > 0.5] = "spam"
-predictedSpam[predictionModel$fitted <= 0.5] = "nonspam"
-
-#Results
-
-#Classification table
-table(predictedSpam,rawTest$type)
-
-#Key statistics
-
-
-###########################################################################################
-# Interpretation
-###########################################################################################
-
-#Type of analysis - Interpretation
-#Describes
-#Correlates/associated with
-#Leads to
-#Predicts
-
-#Explanation
-# Desc: Fraction of char that are $ sign can be used to predict if email is spam
-
-#Interpret coefficients
-# Desc: More $ signs means more Spam under our prediction
-# Desc: Any email with more than 6.6% dollar signs is classified as spam
-
-
-#Interpret measures of uncertainty
-# Error rate was 22%
-
-
-###########################################################################################
-# Challenge results
-###########################################################################################
-
-#Challenge steps:
-#Question
-#Data source
-#Processing
-#Analysis
-#Challenge choice of terms to include in model
-#Challenge measures of uncertainty
-#Potential alternatives
-#Interpretation
-
-
-###########################################################################################
-# Synthetize results
-###########################################################################################
-
-#Question
-
-#Summarize analyses (only if needed and address a challenge)
-
-#Order analyses according to story rather than chronogically
-
-#Produce figures
+# Plot weekdays and weeks activity side by side
+weekendPlot <- ggplot(weekendActivity,aes(x=interval,y=avgSteps)) +
+                geom_line() +
+                labs(title="Weekend", x="",y="Avg Number of steps") +
+                theme(plot.title = element_text(hjust = 0.5))
+weekdaysPlot <- ggplot(weekdaysActivity,aes(x=interval,y=avgSteps)) +
+                geom_line() +
+                labs(title="Weekday", x="Interval",y="Avg Number of steps") +
+                theme(plot.title = element_text(hjust = 0.5))
+grid.arrange(weekendPlot,weekdaysPlot,ncol=1)
+       
