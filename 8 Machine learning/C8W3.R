@@ -16,10 +16,24 @@ library(AppliedPredictiveModeling)
 library(caret)
 library(pgmm)
 library(ElemStatLearn)
+library(dplyr)
+library(rattle)
 
 ###########################################################################################
 # Data
 ###########################################################################################
+#Q1
+data(segmentationOriginal)
+training<-filter(segmentationOriginal,Case=="Train")
+testing<-filter(segmentationOriginal,Case=="Test")
+set.seed(125)
+modelfit<-train(Class~.,method="rpart",data=training)
+test1<-data.frame(TotalIntench2=23000,FiberWidthCh1 = 10, PerimStatusCh1=2)
+test2<-data.frame(TotalIntench2 = 50000, FiberWidthCh1 = 10,VarIntenCh4 = 100)
+test3<-data.frame(TotalIntench2 = 57000, FiberWidthCh1 = 8,VarIntenCh4 = 100)
+test4<-data.frame(FiberWidthCh1 = 8,VarIntenCh4 = 100, PerimStatusCh1=2)
+predict(modelfit,test2)
+fancyRpartPlot(modelfit$finalModel)
 
 #Q3
 data(olive)
@@ -54,6 +68,7 @@ missClass(testSA$chd,testPrecition)
 
 #Q5
 library(ElemStatLearn)
+library(randomForest)
 data(vowel.train)
 data(vowel.test)
 rawTrain<-vowel.train
@@ -61,4 +76,6 @@ rawTest<-vowel.test
 rawTrain$y<-factor(rawTrain$y)
 rawTest$y<-factor(rawTest$y)
 set.seed(33833)
+rforsetFit<-randomForest(y~.,data=rawTrain,importance = FALSE)
+order(varImp(rforsetFit), decreasing=T)
 

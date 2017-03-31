@@ -1,0 +1,24 @@
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## March 25, 2017
+
+```{r}
+library(leaflet)
+
+df<- data.frame(city=c("Bogotá","Santiago de Cali","Medellín","Barranquilla","Cartagena","Cúcuta"),
+                lat=c(4.61,3.437,6.252,10.969,10.4,7.894),
+                lng=c(-74.082,-76.522,-75.564,-74.781,-75.514,-72.508),
+                pop=c(7674366,2392877,1999979,1380425,952024,721398)
+                )
+
+df %>%
+  leaflet() %>%
+  addTiles() %>%
+  addMarkers(data=df,lat = df$lat,lng = df$lng,label = df$city)
+
+```
+
