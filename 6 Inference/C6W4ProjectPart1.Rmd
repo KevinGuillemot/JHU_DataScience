@@ -1,0 +1,106 @@
+---
+title: "Simulation on exponential distribution"
+author: "Kevin Guillemot"
+date: "April 5, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+```
+
+## Overview
+
+In this project you will investigate the exponential distribution in R and compare it with the Central Limit Theorem. The exponential distribution rate parameter is lambda. The mean of exponential distribution is 1/lambda and the standard deviation is also 1/lambda. Set lambda = 0.2 for all of the simulations. 
+
+We will then compare different sample statistics and distributions to their theoretical distributions.
+
+## Simulation
+
+We used R to simulate 40 exponential sample, take their mean and replicate the process 1000 times.
+```{r }
+# Parameters
+lambda<-0.2
+n<-40
+nbSimulations<-1000
+
+# Population statistics
+popMean<-1/lambda
+popSd<-1/lambda
+
+# Sample mean statistics
+sampleMeans<-replicate(nbSimulations,mean(rexp(n, lambda)))
+meanSampleMeans<-mean(sampleMeans)
+sdSampleMeans<-sd(sampleMeans)
+```
+
+## Show the sample mean and compare it to the theoretical mean of the distribution.
+
+We observe sample mean and population mean arevery close, sample mean is an unbiased estimator of population mean.
+```{r }
+popMean
+meanSampleMeans
+```
+
+The graph below illustrates the distribution of sample means and compares it to the the theoretical mean.
+
+```{r echo=FALSE}
+ggplot(data.frame(means=sampleMeans),aes(means))+
+  geom_density() +
+  geom_vline(xintercept = popMean,colour="blue")+
+  geom_vline(xintercept = meanSampleMeans,colour="red")+ 
+  labs(title = "Distribution of sample means")+
+  annotate("text",x=c(popMean-1.5,meanSampleMeans+0.4),y=-0.01,label=c("Theoretical mean","Simulation mean"),hjust=0, colour=c("blue","red"))
+```
+
+## Show how variable the sample is (via variance) and compare it to the theoretical variance of the distribution.
+
+
+The variance of the sample is very close to the population variance divided by the sample size as expected by theory.
+```{r }
+sdSampleMeans^2
+popSd^2/n
+```
+
+The graph below illustrates the distribution of sample means and compares it to the the theoretical mean.
+
+```{r echo=FALSE}
+ggplot(data.frame(means=sampleMeans),aes(means))+
+  geom_density() +
+  geom_vline(xintercept = popMean+popSd/sqrt(n),colour="blue")+
+  geom_vline(xintercept = popMean-popSd/sqrt(n),colour="blue")+
+  geom_vline(xintercept = meanSampleMeans+sdSampleMeans,colour="red")+ 
+  geom_vline(xintercept = meanSampleMeans-sdSampleMeans,colour="red")+
+  labs(title = "Distribution of sample means")+
+  annotate("text",x=c(popMean-1.5,meanSampleMeans+1),y=-0.01,label=c("Theoretical Standard deviation","Simulation Standard deviation"),hjust=0, colour=c("blue","red"))
+```
+
+## Show that the distribution is approximately normal.
+
+The QQ plot of the a large collection of averages of 40 exponentials is approximately normal.
+
+```{r echo=FALSE}
+y<- quantile(sampleMeans,c(0.25,0.75))
+x<- qnorm(c(0.25, 0.75))
+slope<-diff(y)/diff(x)
+int <- y[1L] - slope * x[1L]
+ggplot(data.frame(means=sampleMeans),aes(sample=means))+
+  stat_qq()+
+  geom_abline(slope=slope,intercept=int)+
+  labs(title = "Averages of 40 exponentials")
+```
+
+A large collection of random exponentials clearly has not a normal distribution.
+
+```{r echo=FALSE}
+expSamples<-rexp(nbSimulations, lambda)
+y<- quantile(expSamples,c(0.25,0.75))
+x<- qnorm(c(0.25, 0.75))
+slope<-diff(y)/diff(x)
+int <- y[1L] - slope * x[1L]
+ggplot(data.frame(s=expSamples),aes(sample=s))+
+  stat_qq()+
+  geom_abline(slope=slope,intercept=int)+
+  labs(title = "Random exponentials")
+```

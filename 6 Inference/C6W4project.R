@@ -15,8 +15,10 @@ sdSampleMeans<-sd(sampleMeans)
 
 ggplot(data.frame(means=sampleMeans),aes(means))+
   geom_density() +
-  geom_vline(xintercept = popMean)+
-  geom_vline(xintercept = meanSampleMeans)
+  geom_vline(xintercept = popMean,colour="blue")+
+  geom_vline(xintercept = meanSampleMeans,colour="red")+ 
+  labs(title = "Distribution of sample means")+
+  annotate("text",x=c(popMean-1,meanSampleMeans+0.5),y=0,label=c("Population mean","Mean of samples"),hjust=0, colour=c("blue","red"))
 
 #Show the sample mean and compare it to the theoretical mean of the distribution
 popMean

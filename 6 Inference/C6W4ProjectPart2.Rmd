@@ -1,0 +1,75 @@
+---
+title: "Role of vitamin c in tooh growth"
+author: "Kevin Guillemot"
+date: "April 5, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(datasets)
+library(ggplot2)
+library(dplyr)
+library(broom)
+rawData<-ToothGrowth
+```
+
+## Overview
+
+We are studying the response is the length of odontoblasts (cells responsible for tooth growth) in 60 guinea pigs. Each animal received one of three dose levels of vitamin C (0.5, 1, and 2 mg/day) by one of two delivery methods, (orange juice or ascorbic acid (a form of vitamin C and coded as VC).
+
+## Exploratory data analysis
+
+Length distribution seem to be unimodal and doesn't not require any scaling
+
+```{r echo=FALSE,fig.height=2.5}
+ggplot(rawData,aes(len))+
+  geom_density()+
+  labs(title="Length distribution")
+```
+
+Factors are in equal proportions in the dataset. Data seems to have been properly randomized.
+
+```{r }
+prop.table(table(select(rawData,supp,dose)))
+```
+
+## Influence of Supplement type
+
+OJ seems slightly more potent than VC at first glance
+```{r echo=FALSE,fig.height=3.5}
+ggplot(rawData,aes(x=supp,y=len))+
+  geom_boxplot()+
+  labs(title="Length vs supplementC")
+```
+
+T test revleals no statistical significance. The pvalue of 6% is higher than our 5% threshold, the 95% confidence interval of supplement effect includes 0.
+
+```{r}
+tidy(t.test(formula=rawData$len~rawData$supp, var.equal = FALSE))
+```
+
+## Influence of Dose
+
+An increase in dose seems to be related with an increase in length.
+
+```{r echo=FALSE,fig.height=3.5}
+ggplot(rawData,aes(x=dose,y=len))+
+  geom_point(aes(colour = supp))+
+  labs(title="Length vs dose")
+```
+
+Pairwise T tests suggest the average tooh length is different for each dose level. P avlue is smaller than the significance level of 5% in every case.
+
+```{r}
+tidy(t.test(rawData$len[rawData$dose==1],rawData$dose[rawData$dose==0.5], var.equal = FALSE))
+tidy(t.test(rawData$len[rawData$dose==2],rawData$dose[rawData$dose==1], var.equal = FALSE))
+tidy(t.test(rawData$len[rawData$dose==2],rawData$dose[rawData$dose==0.5], var.equal = FALSE))
+```
+
+## Conclusion
+
+From the available dataset we can conclude tooth length is not influenced in a statistically significant way by the supplement type taken, but that it varies significantly depending on the dose administrated.
+
+A further study could extend the range of dose tested to see if the the effect is still valid at higher dose (which we intuitively wouldn't expect).
+
